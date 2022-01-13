@@ -148,6 +148,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="2" data-path="model-building.html"><a href="model-building.html"><i class="fa fa-check"></i><b>2</b> Model Building</a>
 <ul>
 <li class="chapter" data-level="2.1" data-path="model-building.html"><a href="model-building.html#earth-algorithm"><i class="fa fa-check"></i><b>2.1</b> Earth algorithm</a></li>
+<li class="chapter" data-level="2.2" data-path="model-building.html"><a href="model-building.html#random-forest-model"><i class="fa fa-check"></i><b>2.2</b> Random Forest model</a></li>
+<li class="chapter" data-level="2.3" data-path="model-building.html"><a href="model-building.html#xgboost"><i class="fa fa-check"></i><b>2.3</b> XGBoost</a></li>
 </ul></li>
 <li class="chapter" data-level="3" data-path="model-evaluation.html"><a href="model-evaluation.html"><i class="fa fa-check"></i><b>3</b> Model Evaluation</a></li>
 <li class="divider"></li>
@@ -234,7 +236,652 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb24-2"><a href="model-building.html#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="co">#validation ROC</span></span>
 <span id="cb24-3"><a href="model-building.html#cb24-3" aria-hidden="true" tabindex="-1"></a>mars_val<span class="ot">&lt;-</span><span class="fu">predict</span>(mars2,<span class="at">newdata=</span>val,<span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
 <span id="cb24-4"><a href="model-building.html#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="fu">plotROC</span>(val<span class="sc">$</span>INS,mars_val)</span></code></pre></div>
-<p><img src="bookdownproj_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
+<p><img src="bookdownproj_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="model-building.html#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(caret)</span>
+<span id="cb25-2"><a href="model-building.html#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(randomForest)</span></code></pre></div>
+<pre><code>## randomForest 4.6-14</code></pre>
+<pre><code>## Type rfNews() to see new features/changes/bug fixes.</code></pre>
+<pre><code>## 
+## Attaching package: &#39;randomForest&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:dplyr&#39;:
+## 
+##     combine</code></pre>
+<pre><code>## The following object is masked from &#39;package:ggplot2&#39;:
+## 
+##     margin</code></pre>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="model-building.html#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(xgboost)</span></code></pre></div>
+<pre><code>## 
+## Attaching package: &#39;xgboost&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:dplyr&#39;:
+## 
+##     slice</code></pre>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="model-building.html#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(Ckmeans<span class="fl">.1</span>d.dp)</span>
+<span id="cb34-2"><a href="model-building.html#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(pdp)</span></code></pre></div>
+<pre><code>## 
+## Attaching package: &#39;pdp&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:purrr&#39;:
+## 
+##     partial</code></pre>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="model-building.html#cb37-1" aria-hidden="true" tabindex="-1"></a>train<span class="ot">&lt;-</span><span class="fu">as.data.frame</span>(train)</span>
+<span id="cb37-2"><a href="model-building.html#cb37-2" aria-hidden="true" tabindex="-1"></a>val<span class="ot">&lt;-</span><span class="fu">as.data.frame</span>(val)</span></code></pre></div>
+</div>
+<div id="random-forest-model" class="section level2" number="2.2">
+<h2><span class="header-section-number">2.2</span> Random Forest model</h2>
+<ul>
+<li>build the model</li>
+<li>tune the tree I. ntree II.mtry III.remove the variable beneath “Random”</li>
+<li>at least plot the ROC for the last model</li>
+</ul>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="model-building.html#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">12345</span>)</span>
+<span id="cb38-2"><a href="model-building.html#cb38-2" aria-hidden="true" tabindex="-1"></a>rf.ins <span class="ot">&lt;-</span> <span class="fu">randomForest</span>(<span class="fu">as.factor</span>(INS) <span class="sc">~</span> ., <span class="at">data =</span> train, <span class="at">ntree =</span> <span class="dv">500</span>, <span class="at">importance =</span> <span class="cn">TRUE</span>,<span class="at">nodesize=</span><span class="dv">10</span>)</span>
+<span id="cb38-3"><a href="model-building.html#cb38-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-4"><a href="model-building.html#cb38-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot the change in error across different number of trees</span></span>
+<span id="cb38-5"><a href="model-building.html#cb38-5" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(rf.ins, <span class="at">main =</span> <span class="st">&quot;Number of Trees Compared to MSE&quot;</span>)</span></code></pre></div>
+<p><img src="bookdownproj_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="model-building.html#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co"># tune II.mtry</span></span>
+<span id="cb39-2"><a href="model-building.html#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">12345</span>)</span>
+<span id="cb39-3"><a href="model-building.html#cb39-3" aria-hidden="true" tabindex="-1"></a><span class="fu">tuneRF</span>(<span class="at">x =</span> train[,<span class="sc">!</span>(<span class="fu">names</span>(train) <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;INS&quot;</span>))], <span class="at">y =</span> train[,<span class="st">&quot;INS&quot;</span>],</span>
+<span id="cb39-4"><a href="model-building.html#cb39-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">plot =</span> <span class="cn">TRUE</span>, <span class="at">ntreeTry =</span> <span class="dv">200</span>, <span class="at">stepFactor =</span> <span class="fl">0.5</span>)</span></code></pre></div>
+<pre><code>## mtry = 7  OOB error = 26.71% 
+## Searching left ...
+## mtry = 14    OOB error = 26.89% 
+## -0.006926952 0.05 
+## Searching right ...
+## mtry = 3     OOB error = 27.14% 
+## -0.0163728 0.05</code></pre>
+<p><img src="bookdownproj_files/figure-html/unnamed-chunk-13-2.png" width="672" /></p>
+<pre><code>##        mtry  OOBError
+## 3.OOB     3 0.2714430
+## 7.OOB     7 0.2670703
+## 14.OOB   14 0.2689203</code></pre>
+<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="model-building.html#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="co"># final model</span></span>
+<span id="cb42-2"><a href="model-building.html#cb42-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">12345</span>)</span>
+<span id="cb42-3"><a href="model-building.html#cb42-3" aria-hidden="true" tabindex="-1"></a>rf.ins <span class="ot">&lt;-</span> <span class="fu">randomForest</span>(<span class="fu">as.factor</span>(INS) <span class="sc">~</span> ., <span class="at">data =</span> train, <span class="at">ntree =</span> <span class="dv">200</span>, <span class="at">mtry =</span> <span class="dv">7</span>, <span class="at">importance =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb42-4"><a href="model-building.html#cb42-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-5"><a href="model-building.html#cb42-5" aria-hidden="true" tabindex="-1"></a><span class="co"># variable importance</span></span>
+<span id="cb42-6"><a href="model-building.html#cb42-6" aria-hidden="true" tabindex="-1"></a><span class="fu">varImpPlot</span>(rf.ins,</span>
+<span id="cb42-7"><a href="model-building.html#cb42-7" aria-hidden="true" tabindex="-1"></a>           <span class="at">sort =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb42-8"><a href="model-building.html#cb42-8" aria-hidden="true" tabindex="-1"></a>           <span class="at">n.var =</span> <span class="dv">14</span>,</span>
+<span id="cb42-9"><a href="model-building.html#cb42-9" aria-hidden="true" tabindex="-1"></a>           <span class="at">main =</span> <span class="st">&quot;Order of Variables&quot;</span>)</span></code></pre></div>
+<p><img src="bookdownproj_files/figure-html/unnamed-chunk-13-3.png" width="672" /></p>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="model-building.html#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="fu">importance</span>(rf.ins, <span class="at">type =</span> <span class="dv">1</span>)</span></code></pre></div>
+<pre><code>##                 MeanDecreaseAccuracy
+## ACCTAGE                    7.7249281
+## DDA                        8.4683906
+## DDABAL                    24.3820437
+## DEP                        7.0575167
+## DEPAMT                    13.6893071
+## CHECKS                     9.4610135
+## DIRDEP                     1.2711237
+## NSF                       -2.1841174
+## NSFAMT                     2.2512549
+## PHONE                      5.7620786
+## TELLER                     4.1984060
+## SAV                        5.4184715
+## SAVBAL                    35.7106817
+## ATM                        2.7541410
+## ATMAMT                    13.1761269
+## POS                        4.2470355
+## POSAMT                     4.1150742
+## CD                        11.5737432
+## CDBAL                     21.2267748
+## IRA                        8.1629640
+## IRABAL                    11.7790066
+## INV                        8.2431512
+## INVBAL                     7.0545272
+## MM                        10.0008370
+## MMBAL                     13.0979211
+## MMCRED                     4.6880704
+## CC                         8.4260586
+## CCBAL                      7.1536473
+## CCPURC                     8.2301733
+## SDB                        1.9180517
+## INCOME                     5.7180897
+## LORES                     -0.3927448
+## HMVAL                      5.2128266
+## AGE                        0.2716806
+## CRSCORE                    0.8604807
+## INAREA                    -1.1490497
+## BRANCH                    12.3332145
+## MMCRED_sep_flag            1.0025094
+## ACCTAGE_flag              -1.7002862
+## PHONE_flag                 3.5256954
+## POS_flag                   4.1391653
+## POSAMT_flag                4.0955869
+## INVBAL_flag                4.8061917
+## CCBAL_flag                 4.4738315
+## INCOME_flag               -0.7177039
+## LORES_flag                 0.4378460
+## HMVAL_flag                -0.4254986
+## AGE_flag                   0.3924822
+## CRSCORE_flag              -0.6571605</code></pre>
+<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="model-building.html#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ROC</span></span>
+<span id="cb45-2"><a href="model-building.html#cb45-2" aria-hidden="true" tabindex="-1"></a>rf_val<span class="ot">&lt;-</span><span class="fu">predict</span>(rf.ins,<span class="at">newdata=</span>val[,<span class="sc">!</span>(<span class="fu">names</span>(val) <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;INS&quot;</span>))],<span class="at">type=</span><span class="st">&quot;prob&quot;</span>)</span>
+<span id="cb45-3"><a href="model-building.html#cb45-3" aria-hidden="true" tabindex="-1"></a>rf_val<span class="ot">&lt;-</span><span class="fu">as.data.frame</span>(rf_val)</span>
+<span id="cb45-4"><a href="model-building.html#cb45-4" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">plotROC</span>(val<span class="sc">$</span>INS,rf_val[,<span class="dv">2</span>]))</span></code></pre></div>
+<p><img src="bookdownproj_files/figure-html/unnamed-chunk-13-4.png" width="672" /></p>
+<pre><code>## NULL</code></pre>
+<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="model-building.html#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="co"># variable importance - adding a random variable</span></span>
+<span id="cb47-2"><a href="model-building.html#cb47-2" aria-hidden="true" tabindex="-1"></a>train<span class="sc">$</span>random <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="fu">nrow</span>(train))</span>
+<span id="cb47-3"><a href="model-building.html#cb47-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-4"><a href="model-building.html#cb47-4" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">12345</span>)</span>
+<span id="cb47-5"><a href="model-building.html#cb47-5" aria-hidden="true" tabindex="-1"></a>rf.ins <span class="ot">&lt;-</span> <span class="fu">randomForest</span>(<span class="fu">as.factor</span>(INS) <span class="sc">~</span> ., <span class="at">data =</span> train, <span class="at">ntree =</span> <span class="dv">200</span>, <span class="at">mtry =</span> <span class="dv">7</span>, <span class="at">importance =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb47-6"><a href="model-building.html#cb47-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-7"><a href="model-building.html#cb47-7" aria-hidden="true" tabindex="-1"></a><span class="fu">varImpPlot</span>(rf.ins,</span>
+<span id="cb47-8"><a href="model-building.html#cb47-8" aria-hidden="true" tabindex="-1"></a>           <span class="at">sort =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb47-9"><a href="model-building.html#cb47-9" aria-hidden="true" tabindex="-1"></a>           <span class="at">n.var =</span> <span class="dv">30</span>,</span>
+<span id="cb47-10"><a href="model-building.html#cb47-10" aria-hidden="true" tabindex="-1"></a>           <span class="at">main =</span> <span class="st">&quot;Look for Variables Below Random Variable&quot;</span>)</span></code></pre></div>
+<p><img src="bookdownproj_files/figure-html/unnamed-chunk-13-5.png" width="672" /></p>
+<div class="sourceCode" id="cb48"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb48-1"><a href="model-building.html#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="fu">importance</span>(rf.ins)</span></code></pre></div>
+<pre><code>##                            0          1 MeanDecreaseAccuracy
+## ACCTAGE          5.959552843  0.7310872           5.58836331
+## DDA             -0.740745155 10.5384807           7.64998480
+## DDABAL          12.891464937 16.4939155          24.06650773
+## DEP              3.807834950  4.2207589           8.47327583
+## DEPAMT           9.661971031  0.9093551          12.57626399
+## CHECKS          11.448351916 -2.2836202           9.95483095
+## DIRDEP           2.472452700  1.2156751           2.90244886
+## NSF             -2.686683401  4.9656198           0.15833651
+## NSFAMT          -2.276389261  5.2106125           0.50962091
+## PHONE            7.496190140  1.9772249           7.85743804
+## TELLER           0.722661622  4.2718063           4.05156099
+## SAV             -7.676875632 10.4214169           4.24151497
+## SAVBAL          14.186015078 35.4039121          29.28259923
+## ATM              4.664672735 -0.5004376           4.84392091
+## ATMAMT           9.692419242  0.5067671           9.49196511
+## POS              4.845696039 -0.7532155           4.04628721
+## POSAMT           3.992384127 -0.7684375           3.57282918
+## CD               7.777093372 10.2322245          13.71947981
+## CDBAL           13.892514608 14.3991730          19.87310370
+## IRA              8.098771085  2.7911502           8.74244874
+## IRABAL          11.658143882  3.2350990          12.16102132
+## INV             11.114913378 -6.1620820           9.30821808
+## INVBAL           7.450235241  0.5264275           7.24009121
+## MM               7.043810872  6.0181927           9.33051376
+## MMBAL            7.977707865  7.0031193          11.57894921
+## MMCRED           4.136079956 -1.0971035           2.78788472
+## CC              10.135272955 -2.7068093           9.85892763
+## CCBAL            8.239975589 -2.3655755           6.28238761
+## CCPURC           8.492930669 -0.2887163           8.99725481
+## SDB              1.997646509  1.2787764           2.31286381
+## INCOME           6.579894285 -0.3344054           5.91966254
+## LORES           -0.025270567 -1.5058702          -1.01306509
+## HMVAL            6.510446158 -1.0035653           5.31588450
+## AGE              1.092310954 -1.1178351           0.12556353
+## CRSCORE          1.071824857 -1.4567061          -0.02845033
+## INAREA          -0.157233444 -0.2211701          -0.34199664
+## BRANCH          15.953962299 -5.4546438          11.45317043
+## MMCRED_sep_flag  0.000000000 -1.0025094          -1.00250941
+## ACCTAGE_flag    -0.320980633  2.2409982           0.86597462
+## PHONE_flag       4.629027838 -3.3817170           3.82088950
+## POS_flag         4.935343754 -2.5006179           4.47781508
+## POSAMT_flag      4.616333714 -3.4685790           3.84546565
+## INVBAL_flag      5.969841920 -2.9419033           5.43347584
+## CCBAL_flag       3.356682393 -3.0709093           2.55547601
+## INCOME_flag     -1.053180917 -0.7026002          -1.40434029
+## LORES_flag      -0.514518898 -1.0867531          -1.15553667
+## HMVAL_flag      -0.050259720  1.1404694           0.66979028
+## AGE_flag         2.523010145 -0.3022451           2.07642819
+## CRSCORE_flag     0.006144934 -1.2730337          -0.72272520
+## random          -1.672679280 -2.4969155          -3.07190043
+##                 MeanDecreaseGini
+## ACCTAGE              137.8936321
+## DDA                   31.7584274
+## DDABAL               208.1301747
+## DEP                   54.2958720
+## DEPAMT               118.5824139
+## CHECKS                73.0400294
+## DIRDEP                17.0313889
+## NSF                    7.6533416
+## NSFAMT                16.0586464
+## PHONE                 19.3921512
+## TELLER                54.2774540
+## SAV                   30.5474732
+## SAVBAL               267.4020046
+## ATM                   16.6119460
+## ATMAMT                95.4226612
+## POS                   25.3657478
+## POSAMT                31.2171439
+## CD                    39.8915494
+## CDBAL                 81.3316944
+## IRA                   16.7096137
+## IRABAL                29.3609401
+## INV                   15.2199339
+## INVBAL                 8.0735563
+## MM                    28.2696690
+## MMBAL                 57.8211458
+## MMCRED                10.4789471
+## CC                    32.3188487
+## CCBAL                 71.4471566
+## CCPURC                28.4510415
+## SDB                   17.4869900
+## INCOME               109.3828512
+## LORES                 90.3838928
+## HMVAL                107.2512708
+## AGE                  105.1187741
+## CRSCORE              132.0633896
+## INAREA                 7.4895176
+## BRANCH               228.7537541
+## MMCRED_sep_flag        0.2687878
+## ACCTAGE_flag          10.9661076
+## PHONE_flag             3.8791871
+## POS_flag               4.1282022
+## POSAMT_flag            4.2728668
+## INVBAL_flag            4.2842559
+## CCBAL_flag             3.9186899
+## INCOME_flag            9.5754510
+## LORES_flag             9.3170606
+## HMVAL_flag             9.4515647
+## AGE_flag              10.6798981
+## CRSCORE_flag           5.5682450
+## random               144.4528166</code></pre>
+</div>
+<div id="xgboost" class="section level2" number="2.3">
+<h2><span class="header-section-number">2.3</span> XGBoost</h2>
+<ol style="list-style-type: decimal">
+<li>build the model</li>
+<li>tune the model</li>
+<li>at least plot the ROC for the best model</li>
+</ol>
+<div class="sourceCode" id="cb50"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb50-1"><a href="model-building.html#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Prepare data for XGBoost function - similar to what we did for glmnet</span></span>
+<span id="cb50-2"><a href="model-building.html#cb50-2" aria-hidden="true" tabindex="-1"></a>train<span class="ot">=</span>train[,<span class="dv">1</span><span class="sc">:</span><span class="dv">49</span>] <span class="do">## remove random from ealier</span></span>
+<span id="cb50-3"><a href="model-building.html#cb50-3" aria-hidden="true" tabindex="-1"></a>train_x <span class="ot">&lt;-</span> <span class="fu">model.matrix</span>(INS <span class="sc">~</span> ., <span class="at">data =</span> train)</span>
+<span id="cb50-4"><a href="model-building.html#cb50-4" aria-hidden="true" tabindex="-1"></a>train_y <span class="ot">&lt;-</span> train<span class="sc">$</span>INS</span>
+<span id="cb50-5"><a href="model-building.html#cb50-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-6"><a href="model-building.html#cb50-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Build XGBoost model</span></span>
+<span id="cb50-7"><a href="model-building.html#cb50-7" aria-hidden="true" tabindex="-1"></a>param <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">objective =</span> <span class="st">&quot;binary:logistic&quot;</span>, <span class="at">eval_metric =</span> <span class="st">&quot;auc&quot;</span>)</span>
+<span id="cb50-8"><a href="model-building.html#cb50-8" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">12345</span>)</span>
+<span id="cb50-9"><a href="model-building.html#cb50-9" aria-hidden="true" tabindex="-1"></a>xgb.ins <span class="ot">&lt;-</span> <span class="fu">xgboost</span>(param,<span class="at">data =</span> train_x, <span class="at">label =</span> train_y, <span class="at">subsample =</span> <span class="fl">0.5</span>, <span class="at">nrounds =</span> <span class="dv">100</span>)</span></code></pre></div>
+<pre><code>## [1]  train-rmse:0.743939 
+## [2]  train-rmse:0.597326 
+## [3]  train-rmse:0.508699 
+## [4]  train-rmse:0.456657 
+## [5]  train-rmse:0.424565 
+## [6]  train-rmse:0.406474 
+## [7]  train-rmse:0.395218 
+## [8]  train-rmse:0.387726 
+## [9]  train-rmse:0.382124 
+## [10] train-rmse:0.377626 
+## [11] train-rmse:0.373750 
+## [12] train-rmse:0.370452 
+## [13] train-rmse:0.368416 
+## [14] train-rmse:0.365124 
+## [15] train-rmse:0.361817 
+## [16] train-rmse:0.358936 
+## [17] train-rmse:0.356425 
+## [18] train-rmse:0.354942 
+## [19] train-rmse:0.353357 
+## [20] train-rmse:0.351120 
+## [21] train-rmse:0.347475 
+## [22] train-rmse:0.346513 
+## [23] train-rmse:0.343570 
+## [24] train-rmse:0.341695 
+## [25] train-rmse:0.340232 
+## [26] train-rmse:0.339193 
+## [27] train-rmse:0.337053 
+## [28] train-rmse:0.335205 
+## [29] train-rmse:0.332573 
+## [30] train-rmse:0.331137 
+## [31] train-rmse:0.329355 
+## [32] train-rmse:0.326814 
+## [33] train-rmse:0.325557 
+## [34] train-rmse:0.324208 
+## [35] train-rmse:0.323797 
+## [36] train-rmse:0.322547 
+## [37] train-rmse:0.320210 
+## [38] train-rmse:0.317942 
+## [39] train-rmse:0.316545 
+## [40] train-rmse:0.314690 
+## [41] train-rmse:0.312841 
+## [42] train-rmse:0.310454 
+## [43] train-rmse:0.308170 
+## [44] train-rmse:0.306803 
+## [45] train-rmse:0.303870 
+## [46] train-rmse:0.301983 
+## [47] train-rmse:0.300419 
+## [48] train-rmse:0.298078 
+## [49] train-rmse:0.295030 
+## [50] train-rmse:0.293430 
+## [51] train-rmse:0.292413 
+## [52] train-rmse:0.290634 
+## [53] train-rmse:0.288425 
+## [54] train-rmse:0.286742 
+## [55] train-rmse:0.284857 
+## [56] train-rmse:0.282265 
+## [57] train-rmse:0.280089 
+## [58] train-rmse:0.278802 
+## [59] train-rmse:0.277760 
+## [60] train-rmse:0.276745 
+## [61] train-rmse:0.275726 
+## [62] train-rmse:0.274406 
+## [63] train-rmse:0.273184 
+## [64] train-rmse:0.272104 
+## [65] train-rmse:0.270476 
+## [66] train-rmse:0.268728 
+## [67] train-rmse:0.268088 
+## [68] train-rmse:0.266523 
+## [69] train-rmse:0.265185 
+## [70] train-rmse:0.263131 
+## [71] train-rmse:0.260770 
+## [72] train-rmse:0.258493 
+## [73] train-rmse:0.256999 
+## [74] train-rmse:0.256086 
+## [75] train-rmse:0.254243 
+## [76] train-rmse:0.252435 
+## [77] train-rmse:0.251422 
+## [78] train-rmse:0.249583 
+## [79] train-rmse:0.247409 
+## [80] train-rmse:0.245927 
+## [81] train-rmse:0.244472 
+## [82] train-rmse:0.242767 
+## [83] train-rmse:0.240665 
+## [84] train-rmse:0.239206 
+## [85] train-rmse:0.238278 
+## [86] train-rmse:0.237787 
+## [87] train-rmse:0.236684 
+## [88] train-rmse:0.234600 
+## [89] train-rmse:0.233602 
+## [90] train-rmse:0.232238 
+## [91] train-rmse:0.230865 
+## [92] train-rmse:0.229550 
+## [93] train-rmse:0.228411 
+## [94] train-rmse:0.226925 
+## [95] train-rmse:0.225454 
+## [96] train-rmse:0.224118 
+## [97] train-rmse:0.223376 
+## [98] train-rmse:0.222220 
+## [99] train-rmse:0.220692 
+## [100]    train-rmse:0.219115</code></pre>
+<div class="sourceCode" id="cb52"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb52-1"><a href="model-building.html#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Tuning an XGBoost nrounds parameter - 24 was lowest!</span></span>
+<span id="cb52-2"><a href="model-building.html#cb52-2" aria-hidden="true" tabindex="-1"></a>xgbcv.ins <span class="ot">&lt;-</span> <span class="fu">xgb.cv</span>(<span class="at">data =</span> train_x, <span class="at">label =</span> train_y, <span class="at">subsample =</span> <span class="fl">0.5</span>, <span class="at">nrounds =</span> <span class="dv">100</span>, <span class="at">nfold =</span> <span class="dv">10</span>)</span></code></pre></div>
+<pre><code>## [1]  train-rmse:0.744934+0.002694    test-rmse:0.748296+0.017834 
+## [2]  train-rmse:0.598602+0.003129    test-rmse:0.607432+0.016847 
+## [3]  train-rmse:0.509293+0.002651    test-rmse:0.525793+0.016050 
+## [4]  train-rmse:0.455353+0.001781    test-rmse:0.478327+0.015103 
+## [5]  train-rmse:0.424221+0.001370    test-rmse:0.452760+0.013533 
+## [6]  train-rmse:0.405262+0.001033    test-rmse:0.440055+0.012884 
+## [7]  train-rmse:0.393888+0.001162    test-rmse:0.434528+0.011799 
+## [8]  train-rmse:0.386223+0.001194    test-rmse:0.431434+0.011486 
+## [9]  train-rmse:0.380438+0.001791    test-rmse:0.430704+0.010649 
+## [10] train-rmse:0.375871+0.001613    test-rmse:0.429892+0.010374 
+## [11] train-rmse:0.371946+0.002108    test-rmse:0.430141+0.010113 
+## [12] train-rmse:0.368583+0.002054    test-rmse:0.430271+0.010295 
+## [13] train-rmse:0.365393+0.002396    test-rmse:0.430797+0.010576 
+## [14] train-rmse:0.362445+0.002982    test-rmse:0.431887+0.010798 
+## [15] train-rmse:0.359860+0.002716    test-rmse:0.432171+0.009885 
+## [16] train-rmse:0.357109+0.002719    test-rmse:0.432944+0.010431 
+## [17] train-rmse:0.354258+0.002600    test-rmse:0.432835+0.010273 
+## [18] train-rmse:0.351881+0.002477    test-rmse:0.434232+0.009653 
+## [19] train-rmse:0.348810+0.002711    test-rmse:0.435536+0.009840 
+## [20] train-rmse:0.346248+0.001954    test-rmse:0.436197+0.010150 
+## [21] train-rmse:0.343916+0.001949    test-rmse:0.436938+0.009819 
+## [22] train-rmse:0.341219+0.002255    test-rmse:0.437682+0.009997 
+## [23] train-rmse:0.339197+0.002402    test-rmse:0.438820+0.011045 
+## [24] train-rmse:0.336588+0.002376    test-rmse:0.439122+0.011106 
+## [25] train-rmse:0.334738+0.002547    test-rmse:0.439608+0.010982 
+## [26] train-rmse:0.332800+0.002473    test-rmse:0.440636+0.011021 
+## [27] train-rmse:0.330114+0.002415    test-rmse:0.440873+0.010766 
+## [28] train-rmse:0.327518+0.002073    test-rmse:0.442193+0.011013 
+## [29] train-rmse:0.325362+0.002078    test-rmse:0.442777+0.011209 
+## [30] train-rmse:0.322897+0.002115    test-rmse:0.443360+0.010526 
+## [31] train-rmse:0.320307+0.001989    test-rmse:0.443919+0.010525 
+## [32] train-rmse:0.318011+0.001875    test-rmse:0.444443+0.010604 
+## [33] train-rmse:0.315834+0.001834    test-rmse:0.444851+0.010969 
+## [34] train-rmse:0.313586+0.002074    test-rmse:0.445440+0.011017 
+## [35] train-rmse:0.311748+0.002308    test-rmse:0.445879+0.011036 
+## [36] train-rmse:0.309563+0.002157    test-rmse:0.446626+0.010704 
+## [37] train-rmse:0.307324+0.001901    test-rmse:0.447461+0.010439 
+## [38] train-rmse:0.305169+0.001832    test-rmse:0.447540+0.010176 
+## [39] train-rmse:0.302945+0.002218    test-rmse:0.447917+0.010818 
+## [40] train-rmse:0.300907+0.002237    test-rmse:0.448380+0.010690 
+## [41] train-rmse:0.298999+0.002075    test-rmse:0.448933+0.010559 
+## [42] train-rmse:0.297194+0.002137    test-rmse:0.449324+0.010665 
+## [43] train-rmse:0.295285+0.002237    test-rmse:0.449936+0.010703 
+## [44] train-rmse:0.293213+0.002161    test-rmse:0.451241+0.010437 
+## [45] train-rmse:0.291370+0.002012    test-rmse:0.451810+0.010270 
+## [46] train-rmse:0.289805+0.002031    test-rmse:0.452307+0.009959 
+## [47] train-rmse:0.287932+0.002350    test-rmse:0.453272+0.010107 
+## [48] train-rmse:0.285924+0.002659    test-rmse:0.453755+0.010086 
+## [49] train-rmse:0.284012+0.002695    test-rmse:0.453609+0.010433 
+## [50] train-rmse:0.281964+0.002601    test-rmse:0.454477+0.011072 
+## [51] train-rmse:0.280050+0.002969    test-rmse:0.454666+0.010968 
+## [52] train-rmse:0.278077+0.002747    test-rmse:0.454891+0.010974 
+## [53] train-rmse:0.276149+0.002695    test-rmse:0.455659+0.010872 
+## [54] train-rmse:0.274494+0.002682    test-rmse:0.456310+0.010940 
+## [55] train-rmse:0.272774+0.002648    test-rmse:0.457004+0.010993 
+## [56] train-rmse:0.270763+0.002649    test-rmse:0.457800+0.010763 
+## [57] train-rmse:0.269015+0.002774    test-rmse:0.458884+0.010671 
+## [58] train-rmse:0.267287+0.002955    test-rmse:0.459142+0.010634 
+## [59] train-rmse:0.265344+0.003282    test-rmse:0.459592+0.010694 
+## [60] train-rmse:0.263574+0.003148    test-rmse:0.460236+0.010500 
+## [61] train-rmse:0.261858+0.003478    test-rmse:0.460781+0.010569 
+## [62] train-rmse:0.260213+0.003520    test-rmse:0.461309+0.010512 
+## [63] train-rmse:0.258433+0.003938    test-rmse:0.461528+0.010584 
+## [64] train-rmse:0.256991+0.004182    test-rmse:0.461537+0.010370 
+## [65] train-rmse:0.255620+0.004223    test-rmse:0.461765+0.010399 
+## [66] train-rmse:0.254136+0.003920    test-rmse:0.461700+0.010557 
+## [67] train-rmse:0.252469+0.003858    test-rmse:0.462018+0.010307 
+## [68] train-rmse:0.251162+0.003761    test-rmse:0.462590+0.010685 
+## [69] train-rmse:0.249628+0.003841    test-rmse:0.462921+0.010585 
+## [70] train-rmse:0.248038+0.003601    test-rmse:0.463412+0.010133 
+## [71] train-rmse:0.246457+0.003607    test-rmse:0.463695+0.009794 
+## [72] train-rmse:0.244870+0.003664    test-rmse:0.463934+0.009922 
+## [73] train-rmse:0.243200+0.003442    test-rmse:0.464193+0.009375 
+## [74] train-rmse:0.241697+0.003584    test-rmse:0.464349+0.009213 
+## [75] train-rmse:0.239959+0.003478    test-rmse:0.464921+0.009183 
+## [76] train-rmse:0.238490+0.003271    test-rmse:0.465385+0.009101 
+## [77] train-rmse:0.236859+0.003386    test-rmse:0.465677+0.009422 
+## [78] train-rmse:0.235136+0.003289    test-rmse:0.466270+0.009562 
+## [79] train-rmse:0.233437+0.003302    test-rmse:0.466269+0.009619 
+## [80] train-rmse:0.231662+0.003271    test-rmse:0.466835+0.009715 
+## [81] train-rmse:0.230068+0.003422    test-rmse:0.467339+0.009397 
+## [82] train-rmse:0.228556+0.003378    test-rmse:0.467919+0.009576 
+## [83] train-rmse:0.227307+0.003398    test-rmse:0.467959+0.009419 
+## [84] train-rmse:0.225958+0.003437    test-rmse:0.468129+0.009857 
+## [85] train-rmse:0.224424+0.003473    test-rmse:0.468403+0.009589 
+## [86] train-rmse:0.223147+0.003625    test-rmse:0.468205+0.010063 
+## [87] train-rmse:0.221580+0.003601    test-rmse:0.469016+0.009900 
+## [88] train-rmse:0.220001+0.003785    test-rmse:0.469399+0.010163 
+## [89] train-rmse:0.218758+0.003881    test-rmse:0.469576+0.010180 
+## [90] train-rmse:0.217445+0.003668    test-rmse:0.469820+0.009891 
+## [91] train-rmse:0.215735+0.003452    test-rmse:0.470071+0.010319 
+## [92] train-rmse:0.214368+0.003399    test-rmse:0.469826+0.010550 
+## [93] train-rmse:0.212918+0.003232    test-rmse:0.469580+0.010799 
+## [94] train-rmse:0.211684+0.003347    test-rmse:0.469377+0.010903 
+## [95] train-rmse:0.210598+0.003532    test-rmse:0.469433+0.010887 
+## [96] train-rmse:0.209357+0.003591    test-rmse:0.469440+0.011157 
+## [97] train-rmse:0.207888+0.003523    test-rmse:0.469756+0.011293 
+## [98] train-rmse:0.206655+0.003359    test-rmse:0.470104+0.011187 
+## [99] train-rmse:0.205494+0.003241    test-rmse:0.470012+0.010899 
+## [100]    train-rmse:0.204083+0.003078    test-rmse:0.470495+0.011324</code></pre>
+<div class="sourceCode" id="cb54"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb54-1"><a href="model-building.html#cb54-1" aria-hidden="true" tabindex="-1"></a>best_nrounds<span class="ot">=</span><span class="fu">which.min</span>(xgbcv.ins<span class="sc">$</span>evaluation_log<span class="sc">$</span>test_rmse_mean)</span>
+<span id="cb54-2"><a href="model-building.html#cb54-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-3"><a href="model-building.html#cb54-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Tuning through caret</span></span>
+<span id="cb54-4"><a href="model-building.html#cb54-4" aria-hidden="true" tabindex="-1"></a>tune_grid <span class="ot">&lt;-</span> <span class="fu">expand.grid</span>(</span>
+<span id="cb54-5"><a href="model-building.html#cb54-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">nrounds =</span> best_nrounds,</span>
+<span id="cb54-6"><a href="model-building.html#cb54-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">eta =</span> <span class="fu">c</span>(<span class="fl">0.1</span>, <span class="fl">0.15</span>, <span class="fl">0.2</span>, <span class="fl">0.25</span>, <span class="fl">0.3</span>),</span>
+<span id="cb54-7"><a href="model-building.html#cb54-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">max_depth =</span> <span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>),</span>
+<span id="cb54-8"><a href="model-building.html#cb54-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">gamma =</span> <span class="fu">c</span>(<span class="dv">0</span>),</span>
+<span id="cb54-9"><a href="model-building.html#cb54-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">colsample_bytree =</span> <span class="dv">1</span>,</span>
+<span id="cb54-10"><a href="model-building.html#cb54-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">min_child_weight =</span> <span class="dv">1</span>,</span>
+<span id="cb54-11"><a href="model-building.html#cb54-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">subsample =</span> <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>, <span class="dv">1</span>)</span>
+<span id="cb54-12"><a href="model-building.html#cb54-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb54-13"><a href="model-building.html#cb54-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-14"><a href="model-building.html#cb54-14" aria-hidden="true" tabindex="-1"></a><span class="co"># train_x&lt;-as.data.frame(train_x)</span></span>
+<span id="cb54-15"><a href="model-building.html#cb54-15" aria-hidden="true" tabindex="-1"></a><span class="co"># train_y&lt;-as.data.frame(train_y)</span></span>
+<span id="cb54-16"><a href="model-building.html#cb54-16" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">12345</span>)</span>
+<span id="cb54-17"><a href="model-building.html#cb54-17" aria-hidden="true" tabindex="-1"></a>xgb.ames.caret <span class="ot">&lt;-</span> <span class="fu">train</span>(<span class="at">x =</span> train_x, <span class="at">y =</span> train_y,</span>
+<span id="cb54-18"><a href="model-building.html#cb54-18" aria-hidden="true" tabindex="-1"></a>                        <span class="at">method =</span> <span class="st">&quot;xgbTree&quot;</span>,</span>
+<span id="cb54-19"><a href="model-building.html#cb54-19" aria-hidden="true" tabindex="-1"></a>                        <span class="at">tuneGrid =</span> tune_grid,</span>
+<span id="cb54-20"><a href="model-building.html#cb54-20" aria-hidden="true" tabindex="-1"></a>                        <span class="at">trControl =</span> <span class="fu">trainControl</span>(<span class="at">method =</span> <span class="st">&#39;cv&#39;</span>, <span class="co"># Using 10-fold cross-validation</span></span>
+<span id="cb54-21"><a href="model-building.html#cb54-21" aria-hidden="true" tabindex="-1"></a>                                                 <span class="at">number =</span> <span class="dv">10</span>))</span>
+<span id="cb54-22"><a href="model-building.html#cb54-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-23"><a href="model-building.html#cb54-23" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(xgb.ames.caret)</span></code></pre></div>
+<p><img src="bookdownproj_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+<div class="sourceCode" id="cb55"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb55-1"><a href="model-building.html#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="do">###&gt;&gt;&gt;&gt; best tune_grid</span></span>
+<span id="cb55-2"><a href="model-building.html#cb55-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-3"><a href="model-building.html#cb55-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># nrounds = best_nrounds,</span></span>
+<span id="cb55-4"><a href="model-building.html#cb55-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># eta = c(0.3),</span></span>
+<span id="cb55-5"><a href="model-building.html#cb55-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># max_depth = c(5),</span></span>
+<span id="cb55-6"><a href="model-building.html#cb55-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># subsample = c(0.75)</span></span>
+<span id="cb55-7"><a href="model-building.html#cb55-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-8"><a href="model-building.html#cb55-8" aria-hidden="true" tabindex="-1"></a><span class="co">#best_model</span></span>
+<span id="cb55-9"><a href="model-building.html#cb55-9" aria-hidden="true" tabindex="-1"></a>best_xgb.ins <span class="ot">&lt;-</span> <span class="fu">xgboost</span>(param,<span class="at">data =</span> train_x, <span class="at">label =</span> train_y, <span class="at">subsample =</span> <span class="fl">0.75</span>, <span class="at">nrounds =</span> <span class="dv">12</span>, <span class="at">eta =</span> <span class="fl">0.3</span>, <span class="at">max_depth =</span> <span class="dv">5</span>)</span></code></pre></div>
+<pre><code>## [1]  train-rmse:0.744197 
+## [2]  train-rmse:0.599352 
+## [3]  train-rmse:0.510680 
+## [4]  train-rmse:0.459831 
+## [5]  train-rmse:0.430101 
+## [6]  train-rmse:0.412594 
+## [7]  train-rmse:0.402094 
+## [8]  train-rmse:0.395384 
+## [9]  train-rmse:0.390647 
+## [10] train-rmse:0.387338 
+## [11] train-rmse:0.384222 
+## [12] train-rmse:0.381584</code></pre>
+<div class="sourceCode" id="cb57"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb57-1"><a href="model-building.html#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="co">#training</span></span>
+<span id="cb57-2"><a href="model-building.html#cb57-2" aria-hidden="true" tabindex="-1"></a>xgb_train<span class="ot">&lt;-</span><span class="fu">predict</span>(best_xgb.ins,train_x)</span>
+<span id="cb57-3"><a href="model-building.html#cb57-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plotROC</span>(train<span class="sc">$</span>INS,xgb_train)</span></code></pre></div>
+<p><img src="bookdownproj_files/figure-html/unnamed-chunk-14-2.png" width="672" /></p>
+<div class="sourceCode" id="cb58"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb58-1"><a href="model-building.html#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="do">###validation Varaible selected and remove random</span></span>
+<span id="cb58-2"><a href="model-building.html#cb58-2" aria-hidden="true" tabindex="-1"></a>val<span class="ot">=</span>val[,<span class="dv">1</span><span class="sc">:</span><span class="dv">49</span>] <span class="do">## remove random from ealier</span></span>
+<span id="cb58-3"><a href="model-building.html#cb58-3" aria-hidden="true" tabindex="-1"></a>val_x <span class="ot">&lt;-</span> <span class="fu">model.matrix</span>(INS <span class="sc">~</span> ., <span class="at">data =</span> val)</span>
+<span id="cb58-4"><a href="model-building.html#cb58-4" aria-hidden="true" tabindex="-1"></a>val_y <span class="ot">&lt;-</span> val<span class="sc">$</span>INS</span>
+<span id="cb58-5"><a href="model-building.html#cb58-5" aria-hidden="true" tabindex="-1"></a>xgb_val<span class="ot">&lt;-</span><span class="fu">predict</span>(best_xgb.ins,val_x)</span>
+<span id="cb58-6"><a href="model-building.html#cb58-6" aria-hidden="true" tabindex="-1"></a><span class="fu">plotROC</span>(val<span class="sc">$</span>INS,xgb_val)</span></code></pre></div>
+<p><img src="bookdownproj_files/figure-html/unnamed-chunk-14-3.png" width="672" /></p>
+<div class="sourceCode" id="cb59"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb59-1"><a href="model-building.html#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Variable importance</span></span>
+<span id="cb59-2"><a href="model-building.html#cb59-2" aria-hidden="true" tabindex="-1"></a>variable_importance_xgb <span class="ot">&lt;-</span> <span class="cf">function</span>(){</span>
+<span id="cb59-3"><a href="model-building.html#cb59-3" aria-hidden="true" tabindex="-1"></a>param <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">objective =</span> <span class="st">&quot;binary:logistic&quot;</span>, <span class="at">eval_metric =</span> <span class="st">&quot;auc&quot;</span>)</span>
+<span id="cb59-4"><a href="model-building.html#cb59-4" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">12345</span>)</span>
+<span id="cb59-5"><a href="model-building.html#cb59-5" aria-hidden="true" tabindex="-1"></a>best_xgb.ins <span class="ot">&lt;-</span> <span class="fu">xgboost</span>(param,<span class="at">data =</span> train_x, <span class="at">label =</span> train_y, <span class="at">subsample =</span> <span class="fl">0.75</span>, <span class="at">nrounds =</span> best_nrounds, <span class="at">eta =</span> <span class="fl">0.3</span>, <span class="at">max_depth =</span> <span class="dv">5</span>)</span>
+<span id="cb59-6"><a href="model-building.html#cb59-6" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">xgb.importance</span>(<span class="at">feature_names =</span> <span class="fu">colnames</span>(train_x), <span class="at">model =</span> best_xgb.ins))</span>
+<span id="cb59-7"><a href="model-building.html#cb59-7" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">xgb.ggplot.importance</span>(<span class="fu">xgb.importance</span>(<span class="at">feature_names =</span> <span class="fu">colnames</span>(train_x), <span class="at">model =</span> best_xgb.ins)))</span>
+<span id="cb59-8"><a href="model-building.html#cb59-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb59-9"><a href="model-building.html#cb59-9" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb59-10"><a href="model-building.html#cb59-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb59-11"><a href="model-building.html#cb59-11" aria-hidden="true" tabindex="-1"></a><span class="fu">variable_importance_xgb</span>()</span></code></pre></div>
+<pre><code>## [1]  train-rmse:0.744638 
+## [2]  train-rmse:0.596814 
+## [3]  train-rmse:0.508874 
+## [4]  train-rmse:0.456191 
+## [5]  train-rmse:0.427241 
+## [6]  train-rmse:0.409849 
+## [7]  train-rmse:0.399919 
+## [8]  train-rmse:0.393070 
+## [9]  train-rmse:0.389109 
+## [10] train-rmse:0.384957 
+##          Feature         Gain        Cover   Frequency
+##  1:       SAVBAL 0.2906748990 1.622810e-01 0.084249084
+##  2:       DDABAL 0.1157978583 1.355142e-01 0.091575092
+##  3:        MMBAL 0.0939542359 8.806632e-02 0.029304029
+##  4:        CDBAL 0.0919033957 1.080036e-01 0.062271062
+##  5:         DDA1 0.0683990730 5.800583e-02 0.021978022
+##  6:      ACCTAGE 0.0315231260 3.984315e-02 0.080586081
+##  7:        HMVAL 0.0264171842 3.481067e-02 0.051282051
+##  8:      CRSCORE 0.0239983536 1.174994e-02 0.051282051
+##  9:       INCOME 0.0211622127 1.520502e-02 0.051282051
+## 10:       IRABAL 0.0209293683 3.922474e-02 0.032967033
+## 11:       CHECKS 0.0207376795 1.969079e-02 0.029304029
+## 12:          AGE 0.0192146542 9.679588e-03 0.040293040
+## 13:        CCBAL 0.0187976560 2.004481e-02 0.040293040
+## 14:       ATMAMT 0.0172953014 3.083576e-02 0.029304029
+## 15:       DEPAMT 0.0161197345 8.043917e-03 0.036630037
+## 16:       TELLER 0.0153666016 2.327582e-02 0.036630037
+## 17:          DEP 0.0132051750 2.024647e-02 0.036630037
+## 18:   INVmissing 0.0110150015 1.660318e-02 0.010989011
+## 19:        LORES 0.0081019090 1.689447e-03 0.025641026
+## 20:         IRA1 0.0070951619 9.831952e-03 0.010989011
+## 21:    BRANCHB16 0.0068372296 5.287923e-03 0.010989011
+## 22:         INV1 0.0061921058 3.803719e-02 0.007326007
+## 23:      CCPURC1 0.0057192063 1.952050e-02 0.010989011
+## 24:          CC1 0.0056463734 2.014340e-02 0.010989011
+## 25:       POSAMT 0.0050380645 8.335201e-04 0.010989011
+## 26:       NSFAMT 0.0039195909 4.611248e-03 0.010989011
+## 27:    BRANCHB14 0.0036407623 7.456868e-03 0.007326007
+## 28:          MM1 0.0031728391 6.762268e-03 0.003663004
+## 29:     BRANCHB8 0.0029287621 9.769214e-04 0.007326007
+## 30:          POS 0.0027930609 5.780865e-03 0.007326007
+## 31:      DIRDEP1 0.0026224264 2.072597e-02 0.007326007
+## 32:    BRANCHB13 0.0024863095 9.831952e-03 0.003663004
+## 33:       INVBAL 0.0018822434 3.629845e-04 0.003663004
+## 34:    BRANCHB15 0.0017552331 2.007618e-03 0.003663004
+## 35:         SDB1 0.0017274601 7.663007e-04 0.003663004
+## 36:        PHONE 0.0017182364 3.181716e-04 0.003663004
+## 37:    BRANCHB12 0.0017087346 7.259691e-04 0.003663004
+## 38:    BRANCHB10 0.0016294698 1.232355e-03 0.007326007
+## 39:     BRANCHB6 0.0015629375 4.122787e-04 0.003663004
+## 40:     BRANCHB3 0.0013365828 8.872955e-04 0.003663004
+## 41:     BRANCHB5 0.0012841840 1.792516e-04 0.003663004
+## 42:     BRANCHB9 0.0011116029 1.971768e-04 0.003663004
+## 43: INCOME_flag1 0.0008186868 7.170065e-05 0.003663004
+## 44:    BRANCHB18 0.0007593168 2.240645e-04 0.003663004
+##          Feature         Gain        Cover   Frequency</code></pre>
+<p><img src="bookdownproj_files/figure-html/unnamed-chunk-14-4.png" width="672" /></p>
+<div class="sourceCode" id="cb61"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb61-1"><a href="model-building.html#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Include a random variable to determine variable selection</span></span>
+<span id="cb61-2"><a href="model-building.html#cb61-2" aria-hidden="true" tabindex="-1"></a>train<span class="sc">$</span>random <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="fu">nrow</span>(train))</span>
+<span id="cb61-3"><a href="model-building.html#cb61-3" aria-hidden="true" tabindex="-1"></a>train_x <span class="ot">&lt;-</span> <span class="fu">model.matrix</span>(INS <span class="sc">~</span> ., <span class="at">data =</span> train)[, <span class="sc">-</span><span class="dv">1</span>]</span>
+<span id="cb61-4"><a href="model-building.html#cb61-4" aria-hidden="true" tabindex="-1"></a>train_y <span class="ot">&lt;-</span> train<span class="sc">$</span>INS</span>
+<span id="cb61-5"><a href="model-building.html#cb61-5" aria-hidden="true" tabindex="-1"></a><span class="fu">variable_importance_xgb</span>()</span></code></pre></div>
+<pre><code>## [1]  train-rmse:0.744571 
+## [2]  train-rmse:0.596738 
+## [3]  train-rmse:0.508788 
+## [4]  train-rmse:0.455890 
+## [5]  train-rmse:0.426759 
+## [6]  train-rmse:0.409214 
+## [7]  train-rmse:0.399463 
+## [8]  train-rmse:0.392477 
+## [9]  train-rmse:0.388069 
+## [10] train-rmse:0.384741 
+##           Feature         Gain        Cover   Frequency
+##  1:        SAVBAL 0.2871346012 1.757926e-01 0.075812274
+##  2:        DDABAL 0.1077247344 1.299330e-01 0.068592058
+##  3:         MMBAL 0.0946192392 9.677419e-02 0.032490975
+##  4:         CDBAL 0.0922039755 1.250482e-01 0.057761733
+##  5:          DDA1 0.0652364627 5.213366e-02 0.014440433
+##  6:       ACCTAGE 0.0329941238 3.404620e-02 0.079422383
+##  7:       CRSCORE 0.0269250302 1.428264e-02 0.061371841
+##  8:        random 0.0240615085 2.901792e-02 0.061371841
+##  9:        CHECKS 0.0232215400 2.433472e-02 0.028880866
+## 10:         HMVAL 0.0222971233 1.131587e-02 0.050541516
+## 11:         CCBAL 0.0189343142 1.579740e-02 0.039711191
+## 12:        INCOME 0.0188717463 1.236006e-02 0.043321300
+## 13:           AGE 0.0183586305 4.145417e-03 0.036101083
+## 14:        DEPAMT 0.0182947896 1.049575e-02 0.039711191
+## 15:        IRABAL 0.0180152322 3.340982e-02 0.025270758
+## 16:        ATMAMT 0.0174945311 3.257177e-02 0.036101083
+## 17:        TELLER 0.0122687302 2.085257e-02 0.025270758
+## 18:    INVmissing 0.0109872677 1.660407e-02 0.010830325
+## 19:           DEP 0.0096230438 6.018697e-03 0.028880866
+## 20:         LORES 0.0079008679 3.831710e-03 0.025270758
+## 21:          IRA1 0.0071695259 9.832480e-03 0.010830325
+## 22:          INV1 0.0059168789 3.803924e-02 0.007220217
+## 23:     BRANCHB16 0.0057965132 4.078194e-03 0.007220217
+## 24:     BRANCHB14 0.0049738278 2.520413e-02 0.010830325
+## 25:       CCPURC1 0.0048375451 1.807850e-02 0.007220217
+## 26:           CC1 0.0044118913 1.871936e-02 0.007220217
+## 27:        POSAMT 0.0042137344 8.918248e-04 0.010830325
+## 28:      BRANCHB4 0.0041661842 2.357286e-03 0.010830325
+## 29:        NSFAMT 0.0034087969 8.250500e-03 0.007220217
+## 30:           MM1 0.0031540328 6.762631e-03 0.003610108
+## 31:           POS 0.0027208141 8.201203e-04 0.010830325
+## 32:     BRANCHB13 0.0024876723 9.836962e-03 0.003610108
+## 33:          SDB1 0.0024214291 9.142324e-04 0.007220217
+## 34:     BRANCHB10 0.0019911403 2.541028e-03 0.007220217
+## 35:      BRANCHB9 0.0018719695 4.123009e-04 0.007220217
+## 36:      BRANCHB6 0.0018585768 3.719671e-04 0.003610108
+## 37:     BRANCHB15 0.0017458537 2.007726e-03 0.003610108
+## 38:     BRANCHB12 0.0017102730 7.260081e-04 0.003610108
+## 39:         PHONE 0.0016273237 3.181887e-04 0.003610108
+## 40:        INVBAL 0.0014376920 3.630041e-04 0.003610108
+## 41:      BRANCHB5 0.0012765723 1.792613e-04 0.003610108
+## 42:      BRANCHB8 0.0009787161 2.285581e-04 0.003610108
+## 43:  INCOME_flag1 0.0008286174 7.170451e-05 0.003610108
+## 44:       MMCRED1 0.0006653432 6.274144e-05 0.003610108
+## 45: ACCTAGE_flag1 0.0006350179 6.722297e-05 0.003610108
+## 46:       INAREA1 0.0005265657 9.859370e-05 0.003610108
+##           Feature         Gain        Cover   Frequency</code></pre>
+<p><img src="bookdownproj_files/figure-html/unnamed-chunk-14-5.png" width="672" /></p>
 
 </div>
 </div>

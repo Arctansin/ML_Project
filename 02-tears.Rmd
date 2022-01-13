@@ -10,4 +10,135 @@ library(InformationValue) #ROC curve
 mars_val<-predict(mars2,newdata=val,type="response")
 plotROC(val$INS,mars_val)
 ```
+```{r, warning=FALSE}
+library(caret)
+library(randomForest)
+library(xgboost)
+library(Ckmeans.1d.dp)
+library(pdp)
+train<-as.data.frame(train)
+val<-as.data.frame(val)
+```
+## Random Forest model
+- build the model
+- tune the tree I. ntree II.mtry III.remove the variable beneath "Random"
+- at least plot the ROC for the last model
+```{r, warning=FALSE}
+set.seed(12345)
+rf.ins <- randomForest(as.factor(INS) ~ ., data = train, ntree = 500, importance = TRUE,nodesize=10)
 
+# Plot the change in error across different number of trees
+plot(rf.ins, main = "Number of Trees Compared to MSE")
+
+# tune II.mtry
+set.seed(12345)
+tuneRF(x = train[,!(names(train) %in% c("INS"))], y = train[,"INS"],
+       plot = TRUE, ntreeTry = 200, stepFactor = 0.5)
+
+# final model
+set.seed(12345)
+rf.ins <- randomForest(as.factor(INS) ~ ., data = train, ntree = 200, mtry = 7, importance = TRUE)
+
+# variable importance
+varImpPlot(rf.ins,
+           sort = TRUE,
+           n.var = 14,
+           main = "Order of Variables")
+importance(rf.ins, type = 1)
+
+# ROC
+rf_val<-predict(rf.ins,newdata=val[,!(names(val) %in% c("INS"))],type="prob")
+rf_val<-as.data.frame(rf_val)
+print(plotROC(val$INS,rf_val[,2]))
+
+# variable importance - adding a random variable
+train$random <- rnorm(nrow(train))
+
+set.seed(12345)
+rf.ins <- randomForest(as.factor(INS) ~ ., data = train, ntree = 200, mtry = 7, importance = TRUE)
+
+varImpPlot(rf.ins,
+           sort = TRUE,
+           n.var = 30,
+           main = "Look for Variables Below Random Variable")
+importance(rf.ins)
+```
+## XGBoost
+1. build the model
+2. tune the model
+3. at least plot the ROC for the best model
+```{r, warning=FALSE}
+# Prepare data for XGBoost function - similar to what we did for glmnet
+train=train[,1:49] ## remove random from ealier
+train_x <- model.matrix(INS ~ ., data = train)
+train_y <- train$INS
+
+# Build XGBoost model
+param <- list(objective = "binary:logistic", eval_metric = "auc")
+set.seed(12345)
+xgb.ins <- xgboost(param,data = train_x, label = train_y, subsample = 0.5, nrounds = 100)
+
+#Tuning an XGBoost nrounds parameter - 24 was lowest!
+xgbcv.ins <- xgb.cv(data = train_x, label = train_y, subsample = 0.5, nrounds = 100, nfold = 10)
+best_nrounds=which.min(xgbcv.ins$evaluation_log$test_rmse_mean)
+
+# Tuning through caret
+tune_grid <- expand.grid(
+  nrounds = best_nrounds,
+  eta = c(0.1, 0.15, 0.2, 0.25, 0.3),
+  max_depth = c(1:10),
+  gamma = c(0),
+  colsample_bytree = 1,
+  min_child_weight = 1,
+  subsample = c(0.25, 0.5, 0.75, 1)
+)
+
+# train_x<-as.data.frame(train_x)
+# train_y<-as.data.frame(train_y)
+set.seed(12345)
+xgb.ames.caret <- train(x = train_x, y = train_y,
+                        method = "xgbTree",
+                        tuneGrid = tune_grid,
+                        trControl = trainControl(method = 'cv', # Using 10-fold cross-validation
+                                                 number = 10))
+
+plot(xgb.ames.caret)
+###>>>> best tune_grid
+
+  # nrounds = best_nrounds,
+  # eta = c(0.3),
+  # max_depth = c(5),
+  # subsample = c(0.75)
+
+#best_model
+best_xgb.ins <- xgboost(param,data = train_x, label = train_y, subsample = 0.75, nrounds = 12, eta = 0.3, max_depth = 5)
+
+#training
+xgb_train<-predict(best_xgb.ins,train_x)
+plotROC(train$INS,xgb_train)
+###validation Varaible selected and remove random
+val=val[,1:49] ## remove random from ealier
+val_x <- model.matrix(INS ~ ., data = val)
+val_y <- val$INS
+xgb_val<-predict(best_xgb.ins,val_x)
+plotROC(val$INS,xgb_val)
+
+# Variable importance
+variable_importance_xgb <- function(){
+param <- list(objective = "binary:logistic", eval_metric = "auc")
+set.seed(12345)
+best_xgb.ins <- xgboost(param,data = train_x, label = train_y, subsample = 0.75, nrounds = best_nrounds, eta = 0.3, max_depth = 5)
+print(xgb.importance(feature_names = colnames(train_x), model = best_xgb.ins))
+print(xgb.ggplot.importance(xgb.importance(feature_names = colnames(train_x), model = best_xgb.ins)))
+
+}
+
+variable_importance_xgb()
+
+# Include a random variable to determine variable selection
+train$random <- rnorm(nrow(train))
+train_x <- model.matrix(INS ~ ., data = train)[, -1]
+train_y <- train$INS
+variable_importance_xgb()
+
+```

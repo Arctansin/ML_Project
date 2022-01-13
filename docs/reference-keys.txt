@@ -6,4 +6,6 @@ separation-issue
 test-data-and-the-final-data
 model-building
 earth-algorithm
+random-forest-model
+xgboost
 model-evaluation
