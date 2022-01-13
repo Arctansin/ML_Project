@@ -1,6 +1,6 @@
 # Model Building
 ## Earth algorithm
-```{r, warning=FALSE,eval = FALSE}
+```{r, warning=FALSE}
 mars2 <- earth(INS ~ ., data = train,glm = list(family = binomial))
 summary(mars2)
 evimp(mars2)
@@ -10,5 +10,4 @@ library(InformationValue) #ROC curve
 mars_val<-predict(mars2,newdata=val,type="response")
 plotROC(val$INS,mars_val)
 ```
-
 

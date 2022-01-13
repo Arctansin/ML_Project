@@ -7,4 +7,3 @@ test-data-and-the-final-data
 model-building
 earth-algorithm
 model-evaluation
-earth-algorithm-1

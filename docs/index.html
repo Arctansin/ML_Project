@@ -144,9 +144,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="1.3" data-path="index.html"><a href="index.html#missing-value"><i class="fa fa-check"></i><b>1.3</b> Missing Value</a></li>
 <li class="chapter" data-level="1.4" data-path="index.html"><a href="index.html#separation-issue"><i class="fa fa-check"></i><b>1.4</b> Separation Issue</a></li>
 <li class="chapter" data-level="1.5" data-path="index.html"><a href="index.html#test-data-and-the-final-data"><i class="fa fa-check"></i><b>1.5</b> Test data and the Final Data</a></li>
-<li class="chapter" data-level="1.6" data-path="index.html"><a href="index.html#earth-algorithm"><i class="fa fa-check"></i><b>1.6</b> Earth algorithm</a></li>
 </ul></li>
-<li class="chapter" data-level="2" data-path="model-building.html"><a href="model-building.html"><i class="fa fa-check"></i><b>2</b> Model Building</a></li>
+<li class="chapter" data-level="2" data-path="model-building.html"><a href="model-building.html"><i class="fa fa-check"></i><b>2</b> Model Building</a>
+<ul>
+<li class="chapter" data-level="2.1" data-path="model-building.html"><a href="model-building.html#earth-algorithm"><i class="fa fa-check"></i><b>2.1</b> Earth algorithm</a></li>
+</ul></li>
 <li class="chapter" data-level="3" data-path="model-evaluation.html"><a href="model-evaluation.html"><i class="fa fa-check"></i><b>3</b> Model Evaluation</a></li>
 <li class="divider"></li>
 <li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
@@ -185,19 +187,23 @@ Testing Data : test</p>
 </div>
 <div id="split-variables" class="section level2" number="1.2">
 <h2><span class="header-section-number">1.2</span> Split Variables</h2>
-<ol style="list-style-type: decimal">
+<ul>
 <li>Categorical variable<br />
-1.1 level&lt;10<br />
-1.2 type=character</li>
-</ol>
+
+<ul>
+<li>level&lt;10<br />
+</li>
+<li>type=character</li>
+</ul></li>
+</ul>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="index.html#cb5-1" aria-hidden="true" tabindex="-1"></a>col_unique<span class="ot">&lt;-</span><span class="fu">lapply</span>(<span class="fu">lapply</span>(train,unique),length)</span>
 <span id="cb5-2"><a href="index.html#cb5-2" aria-hidden="true" tabindex="-1"></a>catag_variable<span class="ot">&lt;-</span><span class="fu">names</span>(col_unique[col_unique<span class="sc">&lt;=</span><span class="dv">10</span>])</span>
 <span id="cb5-3"><a href="index.html#cb5-3" aria-hidden="true" tabindex="-1"></a>chara_type<span class="ot">&lt;-</span><span class="fu">lapply</span>(train,typeof)</span>
 <span id="cb5-4"><a href="index.html#cb5-4" aria-hidden="true" tabindex="-1"></a>chara_names<span class="ot">&lt;-</span><span class="fu">names</span>(chara_type[chara_type<span class="sc">==</span><span class="st">&quot;character&quot;</span>])</span>
 <span id="cb5-5"><a href="index.html#cb5-5" aria-hidden="true" tabindex="-1"></a>catag_variable<span class="ot">&lt;-</span><span class="fu">unique</span>(<span class="fu">c</span>(chara_names,catag_variable))</span></code></pre></div>
-<ol start="2" style="list-style-type: decimal">
+<ul>
 <li>Continuous variable</li>
-</ol>
+</ul>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="index.html#cb6-1" aria-hidden="true" tabindex="-1"></a>conti_variable<span class="ot">&lt;-</span><span class="fu">names</span>(train)</span>
 <span id="cb6-2"><a href="index.html#cb6-2" aria-hidden="true" tabindex="-1"></a>conti_variable<span class="ot">&lt;-</span><span class="fu">subset</span>(conti_variable,<span class="sc">!</span>(conti_variable<span class="sc">%in%</span>catag_variable))</span></code></pre></div>
 </div>
@@ -212,10 +218,12 @@ Testing Data : test</p>
 <span id="cb7-2"><a href="index.html#cb7-2" aria-hidden="true" tabindex="-1"></a>na_check<span class="ot">=</span><span class="fu">colSums</span>(<span class="fu">is.na</span>(train))</span>
 <span id="cb7-3"><a href="index.html#cb7-3" aria-hidden="true" tabindex="-1"></a>na_variable<span class="ot">=</span>na_check[na_check<span class="sc">&gt;</span><span class="dv">0</span>]</span>
 <span id="cb7-4"><a href="index.html#cb7-4" aria-hidden="true" tabindex="-1"></a>na_variable<span class="sc">/</span><span class="fu">nrow</span>(train)</span></code></pre></div>
-<pre><code>##    ACCTAGE      PHONE        POS     POSAMT        INV     INVBAL         CC 
-## 0.06427310 0.12654503 0.12654503 0.12654503 0.12654503 0.12654503 0.12654503 
-##      CCBAL     CCPURC     INCOME      LORES      HMVAL        AGE    CRSCORE 
-## 0.12654503 0.12654503 0.18092996 0.18092996 0.18092996 0.20035315 0.02295468</code></pre>
+<pre><code>##    ACCTAGE      PHONE        POS     POSAMT        INV     INVBAL 
+## 0.06427310 0.12654503 0.12654503 0.12654503 0.12654503 0.12654503 
+##         CC      CCBAL     CCPURC     INCOME      LORES      HMVAL 
+## 0.12654503 0.12654503 0.12654503 0.18092996 0.18092996 0.18092996 
+##        AGE    CRSCORE 
+## 0.20035315 0.02295468</code></pre>
 <div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="index.html#cb9-1" aria-hidden="true" tabindex="-1"></a>na_cata<span class="ot">&lt;-</span><span class="fu">names</span>(na_variable)[<span class="fu">names</span>(na_variable) <span class="sc">%in%</span> catag_variable]</span>
 <span id="cb9-2"><a href="index.html#cb9-2" aria-hidden="true" tabindex="-1"></a>na_conti<span class="ot">&lt;-</span><span class="fu">names</span>(na_variable)[<span class="fu">names</span>(na_variable) <span class="sc">%in%</span> conti_variable]</span>
 <span id="cb9-3"><a href="index.html#cb9-3" aria-hidden="true" tabindex="-1"></a>flag_matrix<span class="ot">=</span><span class="fu">matrix</span>(<span class="fu">rep</span>(<span class="dv">0</span>,<span class="fu">nrow</span>(train)<span class="sc">*</span><span class="fu">length</span>(na_conti)),<span class="at">nrow=</span><span class="fu">nrow</span>(train),<span class="at">ncol =</span> <span class="fu">length</span>(na_conti))</span>
@@ -242,9 +250,13 @@ Testing Data : test</p>
 <span id="cb10-4"><a href="index.html#cb10-4" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 <pre><code>## [1] &quot;BRANCH&quot;
 ##    
-##      B1 B10 B11 B12 B13 B14 B15 B16 B17 B18 B19  B2  B3  B4  B5  B6  B7  B8  B9
-##   0 472  49  33  89  82 220 427 286 128 103  54 961 458 924 476 246 259 217  93
-##   1 259  33  26  51  62  51 141  94  83  55  24 454 269 557 267 146 134 150  62
+##      B1 B10 B11 B12 B13 B14 B15 B16 B17 B18 B19  B2  B3  B4  B5  B6  B7  B8
+##   0 472  49  33  89  82 220 427 286 128 103  54 961 458 924 476 246 259 217
+##   1 259  33  26  51  62  51 141  94  83  55  24 454 269 557 267 146 134 150
+##    
+##      B9
+##   0  93
+##   1  62
 ## [1] &quot;DDA&quot;
 ##    
 ##        0    1
@@ -346,10 +358,12 @@ Testing Data : test</p>
 <pre><code>##  [1] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
 ## [13] FALSE FALSE</code></pre>
 <div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="index.html#cb16-1" aria-hidden="true" tabindex="-1"></a>na_variable<span class="sc">/</span><span class="fu">nrow</span>(test)</span></code></pre></div>
-<pre><code>##    ACCTAGE      PHONE        POS     POSAMT        INV     INVBAL         CC 
-## 0.06214689 0.12146893 0.12146893 0.12146893 0.12146893 0.12146893 0.12146893 
-##      CCBAL     CCPURC     INCOME      LORES      HMVAL        AGE    CRSCORE 
-## 0.12146893 0.12146893 0.18785311 0.18785311 0.18785311 0.20668550 0.02401130</code></pre>
+<pre><code>##    ACCTAGE      PHONE        POS     POSAMT        INV     INVBAL 
+## 0.06214689 0.12146893 0.12146893 0.12146893 0.12146893 0.12146893 
+##         CC      CCBAL     CCPURC     INCOME      LORES      HMVAL 
+## 0.12146893 0.12146893 0.12146893 0.18785311 0.18785311 0.18785311 
+##        AGE    CRSCORE 
+## 0.20668550 0.02401130</code></pre>
 <div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="index.html#cb18-1" aria-hidden="true" tabindex="-1"></a>na_cata<span class="ot">&lt;-</span><span class="fu">names</span>(na_variable)[<span class="fu">names</span>(na_variable) <span class="sc">%in%</span> catag_variable]</span>
 <span id="cb18-2"><a href="index.html#cb18-2" aria-hidden="true" tabindex="-1"></a>na_conti<span class="ot">&lt;-</span><span class="fu">names</span>(na_variable)[<span class="fu">names</span>(na_variable) <span class="sc">%in%</span> conti_variable]</span>
 <span id="cb18-3"><a href="index.html#cb18-3" aria-hidden="true" tabindex="-1"></a>flag_matrix<span class="ot">=</span><span class="fu">matrix</span>(<span class="fu">rep</span>(<span class="dv">0</span>,<span class="fu">nrow</span>(test)<span class="sc">*</span><span class="fu">length</span>(na_conti)),<span class="at">nrow=</span><span class="fu">nrow</span>(test),<span class="at">ncol =</span> <span class="fu">length</span>(na_conti))</span>
@@ -382,17 +396,6 @@ Testing Data : test</p>
 <span id="cb19-3"><a href="index.html#cb19-3" aria-hidden="true" tabindex="-1"></a>train<span class="ot">=</span>new_train[index,]</span>
 <span id="cb19-4"><a href="index.html#cb19-4" aria-hidden="true" tabindex="-1"></a>val<span class="ot">=</span>new_train[<span class="sc">-</span>(index),]</span>
 <span id="cb19-5"><a href="index.html#cb19-5" aria-hidden="true" tabindex="-1"></a>test<span class="ot">=</span>new_test</span></code></pre></div>
-</div>
-<div id="earth-algorithm" class="section level2" number="1.6">
-<h2><span class="header-section-number">1.6</span> Earth algorithm</h2>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="index.html#cb20-1" aria-hidden="true" tabindex="-1"></a>mars2 <span class="ot">&lt;-</span> <span class="fu">earth</span>(INS <span class="sc">~</span> ., <span class="at">data =</span> train,<span class="at">glm =</span> <span class="fu">list</span>(<span class="at">family =</span> binomial))</span>
-<span id="cb20-2"><a href="index.html#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(mars2)</span>
-<span id="cb20-3"><a href="index.html#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="fu">evimp</span>(mars2)</span>
-<span id="cb20-4"><a href="index.html#cb20-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-5"><a href="index.html#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(InformationValue) <span class="co">#ROC curve</span></span>
-<span id="cb20-6"><a href="index.html#cb20-6" aria-hidden="true" tabindex="-1"></a><span class="co">#validation ROC</span></span>
-<span id="cb20-7"><a href="index.html#cb20-7" aria-hidden="true" tabindex="-1"></a>mars_val<span class="ot">&lt;-</span><span class="fu">predict</span>(mars2,<span class="at">newdata=</span>val,<span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
-<span id="cb20-8"><a href="index.html#cb20-8" aria-hidden="true" tabindex="-1"></a><span class="fu">plotROC</span>(val<span class="sc">$</span>INS,mars_val)</span></code></pre></div>
 
 </div>
 </div>

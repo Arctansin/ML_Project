@@ -2,7 +2,7 @@
 title: "Machine Learning Project"
 author: "Mingming Li"
 date: "`r Sys.Date()`"
-site: bookdown::bookdown_site
+site: bookdown::bookdown_site         
 ---
 
 # Explonatory Analysis
@@ -29,9 +29,9 @@ unique(train$INS)
 sum(train$INS==1)/length(train$INS)
 ```
 ## Split Variables
-1. Categorical variable\
-1.1 level<10\
-1.2 type=character
+- Categorical variable\
+  - level<10\
+  - type=character
 ```{r, warning=FALSE}
 col_unique<-lapply(lapply(train,unique),length)
 catag_variable<-names(col_unique[col_unique<=10])
@@ -39,7 +39,7 @@ chara_type<-lapply(train,typeof)
 chara_names<-names(chara_type[chara_type=="character"])
 catag_variable<-unique(c(chara_names,catag_variable))
 ```
-2. Continuous variable
+- Continuous variable
 ```{r, warning=FALSE}
 conti_variable<-names(train)
 conti_variable<-subset(conti_variable,!(conti_variable%in%catag_variable))
