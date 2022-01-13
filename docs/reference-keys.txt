@@ -1,0 +1,10 @@
+explonatory-analysis
+target-sampling
+split-variables
+missing-value
+separation-issue
+test-data-and-the-final-data
+model-building
+earth-algorithm
+model-evaluation
+earth-algorithm-1

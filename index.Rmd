@@ -1,9 +1,147 @@
 --- 
-title: "YOUR TITLE HERE"
-author: "YOUR NAME HERE"
+title: "Machine Learning Project"
+author: "Mingming Li"
 date: "`r Sys.Date()`"
 site: bookdown::bookdown_site
 ---
 
-# Down the rabbit-hole
+# Explonatory Analysis
+Training Data : train\
+Testing Data  : test
+```{r, include=FALSE,warning = FALSE} 
+library(tidyverse)
+library(caret)
+library(leaps)
+library(glmnet)
+library(ggplot2)
+library(earth)
+library(ROCR)## performance
+library(InformationValue) #ROC curve
+
+
+train<-read.csv("/Users/mingming/Documents/Machine Learning/Homework1_ML/insurance_t.csv")
+test<-read.csv("/Users/mingming/Documents/Machine Learning/Homework1_ML/insurance_v.csv")
+#names(train)==names(val)
+```
+## Target Sampling
+```{r, warning=FALSE}
+unique(train$INS)
+sum(train$INS==1)/length(train$INS)
+```
+## Split Variables
+1. Categorical variable\
+1.1 level<10\
+1.2 type=character
+```{r, warning=FALSE}
+col_unique<-lapply(lapply(train,unique),length)
+catag_variable<-names(col_unique[col_unique<=10])
+chara_type<-lapply(train,typeof)
+chara_names<-names(chara_type[chara_type=="character"])
+catag_variable<-unique(c(chara_names,catag_variable))
+```
+2. Continuous variable
+```{r, warning=FALSE}
+conti_variable<-names(train)
+conti_variable<-subset(conti_variable,!(conti_variable%in%catag_variable))
+```
+## Missing Value
+1. Finding the variable that has missing value
+2. Imputing the missing value in categorical variable as "Missing"
+3. Imputing the missing value in continuous variable as median, and adding related Flag
+```{r}
+#finding variables that have missing value
+na_check=colSums(is.na(train))
+na_variable=na_check[na_check>0]
+na_variable/nrow(train)
+na_cata<-names(na_variable)[names(na_variable) %in% catag_variable]
+na_conti<-names(na_variable)[names(na_variable) %in% conti_variable]
+flag_matrix=matrix(rep(0,nrow(train)*length(na_conti)),nrow=nrow(train),ncol = length(na_conti))
+colnames(flag_matrix)=c(paste(na_conti,"_flag",sep=""))
+
+#impute the continuous variable
+for (i in seq(1:length(na_conti))){
+  mid_point=median(train[,na_conti[i]],na.rm = TRUE)
+  flag_matrix[is.na(train[,na_conti[i]]),i]=1
+  train[,na_conti[i]]=replace_na(train[,na_conti[i]],mid_point)
+}
+
+#impute the categorical variable
+for (i in seq(1:length(na_cata))){
+  train[,na_cata[i]]=replace_na(train[,na_cata[i]],"missing")
+}
+```
+
+## Separation Issue
+Relationship between any catagorical variable and the target variable
+```{r}
+for (i in seq(1,length(catag_variable))){
+  print(catag_variable[i])
+  print(table(train$INS,train[,catag_variable[i]]))
+}
+```
+Imputing the quasic-complete separation, and adding a corresponding flag
+```{r}
+train$MMCRED_sep_flag=0
+train$MMCRED_sep_flag[train$MMCRED>2]=1
+train$MMCRED[train$MMCRED>2]="3+"
+new_train=cbind(train,flag_matrix)
+```
+factorize the categorical variable
+```{r}
+for(i in c(catag_variable,"MMCRED_sep_flag",colnames(flag_matrix))){
+  new_train[,i]=as.factor(new_train[,i])
+}
+```
+
+## Test data and the Final Data
+Do the same data posturing on the test data
+```{r, warning = FALSE} 
+
+### NA replace with "missing" or median value
+## na_variable store all the vaiables with missing value
+
+na_check_train=colSums(is.na(train))
+na_variable_train=na_check[na_check_train>0]
+
+na_check=colSums(is.na(test))
+na_variable=na_check[na_check>0]
+
+na_variable %in% na_variable_train
+
+na_variable/nrow(test)
+na_cata<-names(na_variable)[names(na_variable) %in% catag_variable]
+na_conti<-names(na_variable)[names(na_variable) %in% conti_variable]
+flag_matrix=matrix(rep(0,nrow(test)*length(na_conti)),nrow=nrow(test),ncol = length(na_conti))
+colnames(flag_matrix)=c(paste(na_conti,"_flag",sep=""))
+
+#impute the continuous variable
+for (i in seq(1:length(na_conti))){
+  mid_point=median(test[,na_conti[i]],na.rm = TRUE)
+  flag_matrix[is.na(test[,na_conti[i]]),i]=1
+  test[,na_conti[i]]=replace_na(test[,na_conti[i]],mid_point)
+}
+
+#impute the categorical variable
+for (i in seq(1:length(na_cata))){
+  test[,na_cata[i]]=replace_na(test[,na_cata[i]],"missing")
+}
+
+test$MMCRED_sep_flag=0
+test$MMCRED_sep_flag[test$MMCRED>2]=1
+test$MMCRED[test$MMCRED>2]="3+"
+new_test=cbind(test,flag_matrix)
+
+#factorize the categorical variable
+for(i in c(catag_variable,"MMCRED_sep_flag",colnames(flag_matrix))){
+  new_test[,i]=as.factor(new_test[,i])
+}
+```
+Split the training into two pieces, train and val
+```{r}
+set.seed(123)
+index=sample(1:nrow(new_train),0.7*nrow(new_train))
+train=new_train[index,]
+val=new_train[-(index),]
+test=new_test
+```
 
